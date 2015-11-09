@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ date }} Position:{{ position }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  {% block styles %}{% endblock %}
+  <style>
+  /* fix for moxilla table-responsive https://stackoverflow.com/questions/17408815/fieldset-resizes-wrong-appears-to-have-unremovable-min-width-min-content/17863685#17863685*/
+  @-moz-document url-prefix() {
+      fieldset {
+          display: table-cell;
+      }
+  }
+  div {
+    /* padding: 2px; */
+    /* margin: 2px; */
+    /* background-color: rgba(86, 61, 124, 0.15); */
+    /* border: 1px solid rgba(86, 61, 124, 0.2); */
+  }
+  .left-header {
+    float:left;
+    margin:0px;
+  }
+  .right-header {
+    float:right;
+  }
+  .footer {
+    min-height:200px;
+    background-color:#F8F8F8;
+  }
+  .container {
+     margin-left:0px;
+     padding-right:25px;
+     padding-left:25px;
+  }
+  .nav-wrapper{
+
+  }
+  .nomargins {
+    margin: 0 auto;
+  }
+  .top-nav {
+     /* margin: 0 auto; */
+     margin-bottom:0px;
+     min-height:auto;
+  }
+  .header0{
+    min-height:20px;
+  }
+  .header1{
+    min-height:20px;
+  }
+  .breadcrumbs {
+    margin-top:5px;
+  }
+  .main {
+    min-height:720px;
+  }
+  </style>
+</head>
+<body>
+<div id='header'>
+  <div id='head0' class="header0 container">
+  </div>
+  <div id='head1'  class="header1">
+    <div class="container">
+    <div class="left-header">
+        <h1>{{ date }} Position:{{ position }}</h1>
+    </div> <!-- end left-header -->
+    <div class="right-header">
+    </div>
+  </div>
+  </div> <!-- end head1 -->
+</div> <!-- end header -->
+<div id='top-nav' class="top-nav navbar navbar-default">
+  <div class="container" role="navigation">
+    <ul class="nav nav-pills">
+      {% for item in nav %}
+      <li role="presentation"><a href="{{ item.link }}">{{ item.name }}</a></li>
+      {% endfor %}
+    </ul>
+</div>
+</div>
+<div id='main' class="main container">
+  <div class="row nomargins">
+    {% block main %}
+    {% endblock %}
+  </div><!-- end row -->
+</div> <!-- end main -->
+<div id='footer' class="footer">
+  <div class="container">
+    <h2>Footer</h2>
+  </div>
+</div>
+</bodY>
+</html>

@@ -1,0 +1,48 @@
+{% extends "layout.tmpl" %}
+{% block title %}Home{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="/static/dklineups/css/jquery.dynatable.css">
+<link rel="stylesheet" href="css/jquery.dynatable.css">
+{% endblock %}
+{% block main %}
+<script src="/static/dklineups/js/jquery.dynatable.js"></script>
+<script src="js/jquery.dynatable.js"></script>
+<script>
+console.log('test');
+myJsonData = {{json_player_data}};
+console.log(myJsonData[0].player);
+//var myRecords = JSON.parse(JSON.stringify(myJsonData));
+var myRecords = myJsonData;
+$( document ).ready(function() {
+  $('#my-final-table').dynatable({
+    dataset: {
+      records: myRecords
+    }
+  });
+});
+</script>
+<table id="my-final-table" class="table table-bordered">
+  <thead>
+    <th class="dynatable-head">player</th>
+    <th class="dynatable-head">position</th>
+    <th class="dynatable-head">team</th>
+    <th class="dynatable-head">vteam</th>
+    <th class="dynatable-head">hteam</th>
+    <th class="dynatable-head">gp</th>
+    <th class="dynatable-head">goals</th>
+    <th class="dynatable-head">assists</th>
+    <th class="dynatable-head">points</th>
+    <th class="dynatable-head">shots</th>
+    <th class="dynatable-head">time_on_ice</th>
+    <th class="dynatable-head">time_on_ice_s</th>
+    <th class="dynatable-head">dk_points</th>
+    <th class="dynatable-head">fppg</th>
+    <th class="dynatable-head">salary</th>
+    <th class="dynatable-head">fppgsal</th>
+    <th class="dynatable-head">variance</th>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+{% endblock %}
