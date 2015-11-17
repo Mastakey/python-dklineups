@@ -46,10 +46,10 @@ dksalary = DKSalary('input/'+myDate+'_DKSalaries.csv')
 dkdata = dksalary.getDkdata()
 
 #Load DK UTIL
-dkutil = DKUtil(sq3reader, player_list, boxscores, dkdata, {'logging':'off'})
+dkutil = DKUtil(sq3reader, player_list, boxscores, dkdata, {'logging':'on'})
 
 def filter(playerData):
-	if (playerData['time_on_ice_s'] > 1020 and playerData['fppg'] > 2.5):
+	if (playerData['time_on_ice_s'] > 920 and playerData['fppg'] > 2.2):
 		return True
 	else:
 		return False
@@ -71,4 +71,4 @@ sorter = 'value'
 #sorter = 'value'
 
 dkutil.generatePlayerData(myDate, '2016', filter)
-dkutil.generateLineup(sorter)
+dkutil.generateLineup_v2(sorter)

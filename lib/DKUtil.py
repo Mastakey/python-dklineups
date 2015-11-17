@@ -1,8 +1,10 @@
+from __future__ import division
 import SQ3Reader
 import math
 from operator import itemgetter
 import itertools
 import sys
+import time
 
 class DKUtil(object):
     def __init__(self, sq3, players_list, boxscores, salary_data, config):
@@ -20,22 +22,61 @@ class DKUtil(object):
     def debugLog(self, string):
         if self.config['logging'] == "on":
             f = open("DKUtil.log", "a")
-            f.write(str(string).encode('utf8'))
+            string = string.encode("utf-8")
+            f.write(string)
             f.write("\n")
 
     def generateLineup_v2(self, sorter):
+        start_time = time.time()
         mylineup_center = [list(x) for x in itertools.combinations(self.center_stats, 2)]
         mylineup_wing = [list(x) for x in itertools.combinations(self.wing_stats, 3)]
         mylineup_defence = [list(x) for x in itertools.combinations(self.defence_stats, 2)]
+        self.debugLog("# of Center:"+str(len(self.center_stats)))
+        self.debugLog("# of Wing:"+str(len(self.wing_stats)))
+        self.debugLog("# of Defence:"+str(len(self.defence_stats)))
+        self.debugLog("Cominations for Center:"+str(len(mylineup_center)))
+        self.debugLog("Cominations for Wing:"+str(len(mylineup_wing)))
+        self.debugLog("Cominations for Defence:"+str(len(mylineup_defence)))
+
+        allcount = len(mylineup_center)*len(mylineup_wing)*len(mylineup_defence)
+        self.debugLog("All Combinations:"+str(allcount))
+
         myset = []
         myset.append(mylineup_center)
         myset.append(mylineup_wing)
         myset.append(mylineup_defence)
         mycombos = itertools.product(*myset)
-        mylineups = []
-        mycount = 0
+        mylineups_fppg = [
+        {'lineup':'', 'salary':0, 'fppg':0, 'value':0},
+        {'lineup':'', 'salary':0, 'fppg':0, 'value':0},
+        {'lineup':'', 'salary':0, 'fppg':0, 'value':0}
+        ]
+        mylineups_value = [
+        {'lineup':'', 'salary':0, 'fppg':0, 'value':0},
+        {'lineup':'', 'salary':0, 'fppg':0, 'value':0},
+        {'lineup':'', 'salary':0, 'fppg':0, 'value':0}
+        ]
+        count = 1
+        progress = 0
         for combo in mycombos:
-
+            if (count % 500000 == 0):
+                mytime = time.time() - start_time
+                progress = (count/allcount)*100
+                time_remaining = ((100/progress)*mytime)-mytime
+                min_remaining = int(time_remaining/60)
+                sec_remaining = time_remaining % 60
+                print "---%f %d minutes and %d seconds remaining---" % (progress, min_remaining, sec_remaining)
+                self.debugLog("---"+str(progress)+" "+str(min_remaining)+" minutes and "+str(sec_remaining)+" seconds remaining---")
+                self.debugLog("Begin FPPG Lineup")
+                for myl in mylineups_fppg:
+                    self.debugLog(str(myl['fppg'])+","+str(myl['salary'])+","+str(myl['value'])+","+myl['lineup'])
+                self.debugLog("End FPPG Lineup")
+                self.debugLog("Begin Value Lineup")
+                for myl in mylineups_value:
+                    self.debugLog(str(myl['fppg'])+","+str(myl['salary'])+","+str(myl['value'])+","+myl['lineup'])
+                self.debugLog("End Value Lineup")
+                sys.stdout.flush()
+            count += 1
         #for myc in mylineup_center:
         #    for myw in mylineup_wing:
         #        for myd in mylineup_defence:
@@ -43,26 +84,35 @@ class DKUtil(object):
                     #lineup.extend(myc)
                     #lineup.extend(myw)
                     #lineup.extend(myd)
-            for lineup in combo:
-                salary = 0
-                fppg = 0.0
-                lineupstr = ""
-                for player in lineup:
-                    salary += int(player['salary'])
-                    fppg += float(player['fppg'])
-                    lineupstr += player['player']+"|"
+            salary = 0
+            fppg = 0.0
+            value = 0.0
+            lineupstr = ""
+            templineups = []
+            for position in combo:
+                templineups.extend(position)
+            for player in templineups:
+                salary += int(player['salary'])
+                fppg += float(player['fppg'])
+                value += fppg/salary
+                lineupstr += player['player']+"|"
                 if salary < 40000:
-                    myvalue = fppg/salary
-                    mydict = {'lineup':lineupstr, 'salary':salary, 'fppg':fppg, 'value':myvalue}
-                    mylineups.append(mydict)
-                if mycount % 10000 == 0:
-                    #print mycount
-                    sys.stdout.flush()
-                mycount += 1
-
-        mylineups = sorted(mylineups, key=itemgetter(sorter), reverse=True)
-        for myl in mylineups:
+                    mydict = {'lineup':lineupstr, 'salary':salary, 'fppg':fppg, 'value':value}
+                    if (len(mylineups_fppg) > 0):
+                        mylineups_fppg = DKUtil.compareTop3Lineups(mylineups_fppg, mydict, 'fppg')
+                    else:
+                        mylineups_fppg.append(mydict)
+                    if (len(mylineups_value) > 0):
+                        mylineups_value = DKUtil.compareTop3Lineups(mylineups_value, mydict, 'value')
+                    else:
+                        mylineups_value.append(mydict)
+        print "FPPG Lineups:"
+        for myl in mylineups_fppg:
             print str(myl['fppg'])+","+str(myl['salary'])+","+str(myl['value'])+","+myl['lineup']
+        print "Value Lineups:"
+        for myl in mylineups_value:
+            print str(myl['fppg'])+","+str(myl['salary'])+","+str(myl['value'])+","+myl['lineup']
+        return mylineups_fppg
 
     def generateLineup(self, sorter):
         mylineup_center = [list(x) for x in itertools.combinations(self.center_stats, 2)]
@@ -148,6 +198,19 @@ class DKUtil(object):
 
 
 #======================= Static Methods =======================
+    @staticmethod
+    def compareTop3Lineups(top3list, lineup, compareby):
+        myvalue = lineup[compareby]
+        newlist = top3list
+        myindex = 0
+        for x in top3list:
+            if myvalue > x[compareby]:
+                newlist[myindex] = lineup
+                break
+            else:
+                newlist[myindex] = top3list[myindex]
+            myindex += 1
+        return newlist
     @staticmethod
     def getOppTeams(sq3, team, date):
         oppteams = sq3.executeQueryDict("""SELECT hteamstr, vteamstr from
